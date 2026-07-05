@@ -1,11 +1,23 @@
 [project]
-name = "template"
+name = "graphrag"
 version = "0.1.0"
-requires-python = ">=3.12"
+requires-python = "~=3.12.0"
 dependencies = [
     "matplotlib",
     "numpy",
     "pandas",
     "watermark",
     "jupyter",
+    "spacy>=3.8.14",
+    "rebel>=0.0.0",
+    "torch>=2.12.1",
+    "datasets>=5.0.0",
+    "transformers>=5.13.0",
+    "networkx>=3.6.1",
+    "tqdm>=4.68.3",
+    "ipywidgets>=8.1.8",
+    "fastcoref>=2.1.6",
+    "tokenizers>=0.22.2",
+    "anthropic>=0.116.0",
+    "pyvis>=0.3.2",
 ]
