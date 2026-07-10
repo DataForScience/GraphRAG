@@ -38,6 +38,52 @@ Everything runs **in-process** — no database server, no Docker. The LLM (Anthr
 
 **The checkpoint system:** each notebook ends by saving its outputs to `checkpoints/` and begins by loading what it needs from there. If a checkpoint is missing — you skipped a part, or a model failed to download — the notebook falls back to built-in data and keeps going, so every part runs end to end, alone or in sequence. Long stages (NER, coref, REBEL) checkpoint incrementally: interrupt the kernel any time and re-run to resume.
 
+## Contents
+
+- Intro & roadmap
+
+Why knowledge graphs (recommendations, fraud, drug discovery) and the agent-memory angle. Demo the finished chatbot, then walk the four-hour map so people know when the hands-on parts land.
+
+- RAG fundamentals
+
+The retrieval-augmented generation loop: chunk → embed → retrieve → generate. Why we ground LLMs at all (hallucination, stale knowledge, private data). Vector search and embeddings at a conceptual level, then the failure modes that motivate graphs: multi-hop questions, “global” questions spanning many documents, and queries that hinge on relationships rather than text similarity. A tiny vector-RAG snippet here makes a useful baseline to beat later.
+
+- Graph RAG architecture
+
+How graph RAG reframes retrieval: entities and typed relations as the retrieval substrate instead of opaque chunks. The architecture they’ll build — text → triples → graph → query → grounded generation — with a diagram. Contrast with vector RAG (and hybrid approaches), and note where the field sits (e.g., Microsoft’s GraphRAG, the broader “structured memory for agents” trend). Tie back to durable agent memory vs. ephemeral vector context.
+
+- Knowledge graph construction overview
+
+The construction problem end to end: from raw prose to (head, relation, tail) triples to nodes and edges. Why it’s four stages, what each one fixes, and where graphs typically break (spoiler: skipped coreference). Sets up the next three blocks.
+
+- spaCy
+
+Load a slice of wikitext-103-v1, sentence segmentation, and NER. Inspect entities on a sample paragraph so people see raw material before transformation.
+
+— fastcoref
+
+Resolve pronouns and references. The make-or-break step: show a before/after where unresolved coref produces orphaned or wrong nodes, and discuss why most quick pipelines skip it.
+
+— REBEL
+
+Extract (head, relation, tail) triples from the coref-resolved text. Eyeball the output, discuss noise, confidence thresholds, and a simple filtering pass.
+
+— NetworkX, build & explore
+
+Build a DiGraph (entities as nodes, relation stored as an edge attribute). Query it in plain Python — neighbors, paths, subgraph filtering — then run built-in algorithms (PageRank, connected components, community detection via greedy_modularity_communities or python-louvain) and visualize a subgraph with matplotlib or pyvis.
+
+- Graph-backed chatbot
+
+Wire it all together: natural-language question → the LLM identifies the relevant entity/relation → your Python code traverses NetworkX → the retrieved subgraph is fed back as grounding → answer. Run the full pipeline on a fresh paragraph so attendees see text become graph become answer in one pass. Contrast a grounded response with a hallucinated one.
+
+- Evaluation
+
+How to know it works. Split into retrieval quality (did we pull the right subgraph for the question?) and answer quality (faithfulness/groundedness, answer relevance). Build a small multi-hop question set the graph should answer but naive vector RAG struggles with, and compare the two. Mention tooling like RAGAS and LLM-as-judge, plus the honest limitations of each.
+
+- Production considerations
+
+What changes beyond a workshop slice: persisting the graph (GraphML/pickle vs. graduating to a server-backed store when it outgrows RAM), incremental updates as new documents arrive, entity resolution and deduplication at scale, extraction-quality drift from REBEL, latency and cost of the LLM-in-the-loop, and monitoring what the graph and chatbot actually return.
+
 ## Setup
 
 Install [uv](https://docs.astral.sh/uv/) if you don't have it yet:
@@ -58,41 +104,6 @@ Notes:
 - First run downloads models: spaCy `en_core_web_sm`, `biu-nlp/f-coref`, and REBEL (`Babelscape/rebel-large`, ~1.6 GB) — this is the main time sink, so run Part 1's setup cell early.
 - GPU is optional. Pipelines auto-detect `cuda` / Apple `mps` / CPU; everything works on CPU, just slower. Use `load_wikitext(target_chars=4000)` in Part 1 for a quick run — REBEL costs ~1 s/sentence on CPU.
 - For the chatbot's LLM generation step, set `ANTHROPIC_API_KEY` in your environment (optional).
-
-## Contents
-
-- Intro & roadmap
-Why knowledge graphs (recommendations, fraud, drug discovery) and the agent-memory angle. Demo the finished chatbot, then walk the four-hour map so people know when the hands-on parts land.
-
-- RAG fundamentals
-The retrieval-augmented generation loop: chunk → embed → retrieve → generate. Why we ground LLMs at all (hallucination, stale knowledge, private data). Vector search and embeddings at a conceptual level, then the failure modes that motivate graphs: multi-hop questions, “global” questions spanning many documents, and queries that hinge on relationships rather than text similarity. A tiny vector-RAG snippet here makes a useful baseline to beat later.
-
-- Graph RAG architecture
-How graph RAG reframes retrieval: entities and typed relations as the retrieval substrate instead of opaque chunks. The architecture they’ll build — text → triples → graph → query → grounded generation — with a diagram. Contrast with vector RAG (and hybrid approaches), and note where the field sits (e.g., Microsoft’s GraphRAG, the broader “structured memory for agents” trend). Tie back to durable agent memory vs. ephemeral vector context.
-
-- Knowledge graph construction overview
-The construction problem end to end: from raw prose to (head, relation, tail) triples to nodes and edges. Why it’s four stages, what each one fixes, and where graphs typically break (spoiler: skipped coreference). Sets up the next three blocks.
-
-- spaCy
-Load a slice of wikitext-103-v1, sentence segmentation, and NER. Inspect entities on a sample paragraph so people see raw material before transformation.
-
-— fastcoref
-Resolve pronouns and references. The make-or-break step: show a before/after where unresolved coref produces orphaned or wrong nodes, and discuss why most quick pipelines skip it.
-
-— REBEL
-Extract (head, relation, tail) triples from the coref-resolved text. Eyeball the output, discuss noise, confidence thresholds, and a simple filtering pass.
-
-— NetworkX, build & explore
-Build a DiGraph (entities as nodes, relation stored as an edge attribute). Query it in plain Python — neighbors, paths, subgraph filtering — then run built-in algorithms (PageRank, connected components, community detection via greedy_modularity_communities or python-louvain) and visualize a subgraph with matplotlib or pyvis.
-
-- Graph-backed chatbot
-Wire it all together: natural-language question → the LLM identifies the relevant entity/relation → your Python code traverses NetworkX → the retrieved subgraph is fed back as grounding → answer. Run the full pipeline on a fresh paragraph so attendees see text become graph become answer in one pass. Contrast a grounded response with a hallucinated one.
-
-- Evaluation
-How to know it works. Split into retrieval quality (did we pull the right subgraph for the question?) and answer quality (faithfulness/groundedness, answer relevance). Build a small multi-hop question set the graph should answer but naive vector RAG struggles with, and compare the two. Mention tooling like RAGAS and LLM-as-judge, plus the honest limitations of each.
-
-- Production considerations
-What changes beyond a workshop slice: persisting the graph (GraphML/pickle vs. graduating to a server-backed store when it outgrows RAM), incremental updates as new documents arrive, entity resolution and deduplication at scale, extraction-quality drift from REBEL, latency and cost of the LLM-in-the-loop, and monitoring what the graph and chatbot actually return.
 
 ## Author
 
