@@ -60,15 +60,15 @@ The construction problem end to end: from raw prose to (head, relation, tail) tr
 
 Load a slice of wikitext-103-v1, sentence segmentation, and NER. Inspect entities on a sample paragraph so people see raw material before transformation.
 
-— fastcoref
+- fastcoref
 
 Resolve pronouns and references. The make-or-break step: show a before/after where unresolved coref produces orphaned or wrong nodes, and discuss why most quick pipelines skip it.
 
-— REBEL
+- REBEL
 
 Extract (head, relation, tail) triples from the coref-resolved text. Eyeball the output, discuss noise, confidence thresholds, and a simple filtering pass.
 
-— NetworkX, build & explore
+- NetworkX, build & explore
 
 Build a DiGraph (entities as nodes, relation stored as an edge attribute). Query it in plain Python — neighbors, paths, subgraph filtering — then run built-in algorithms (PageRank, connected components, community detection via greedy_modularity_communities or python-louvain) and visualize a subgraph with matplotlib or pyvis.
 
