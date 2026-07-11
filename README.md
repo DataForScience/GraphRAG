@@ -25,7 +25,7 @@ Along the way we cover why vector RAG breaks on multi-hop, "global", and relatio
 
 Everything runs **in-process** — no database server, no Docker. The LLM (Anthropic API) is optional: without an API key, a template renders the retrieved facts directly, and the retrieval machinery (the actual lesson) is identical.
 
-## Repository contents
+## Repository structure
 
 | Path | What it is |
 |---|---|
@@ -40,13 +40,10 @@ Everything runs **in-process** — no database server, no Docker. The LLM (Anthr
 
 ## Contents
 
-- Intro & roadmap
-
-Why knowledge graphs (recommendations, fraud, drug discovery) and the agent-memory angle. Demo the finished chatbot, then walk the four-hour map so people know when the hands-on parts land.
-
-- RAG fundamentals
-
-The retrieval-augmented generation loop: chunk → embed → retrieve → generate. Why we ground LLMs at all (hallucination, stale knowledge, private data). Vector search and embeddings at a conceptual level, then the failure modes that motivate graphs: multi-hop questions, “global” questions spanning many documents, and queries that hinge on relationships rather than text similarity. A tiny vector-RAG snippet here makes a useful baseline to beat later.
+| &nbsp; | &nbsp; |
+| --- | --- |
+| Intro & roadmap | Why knowledge graphs (recommendations, fraud, drug discovery) and the agent-memory angle. Demo the finished chatbot, then walk the four-hour map so people know when the hands-on parts land. |
+| RAG fundamentals | The retrieval-augmented generation loop: chunk → embed → retrieve → generate. Why we ground LLMs at all (hallucination, stale knowledge, private data). Vector search and embeddings at a conceptual level, then the failure modes that motivate graphs: multi-hop questions, “global” questions spanning many documents, and queries that hinge on relationships rather than text similarity. A tiny vector-RAG snippet here makes a useful baseline to beat later. |
 
 - Graph RAG architecture
 
